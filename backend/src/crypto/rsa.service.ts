@@ -6,7 +6,7 @@ import * as path from 'path';
 
 @Injectable()
 export class RSAService implements OnModuleInit {
-  private readonly keyDir = process.env.KEYS_DIR || path.join(__dirname, '../../../keys');
+  private readonly keyDir = process.env.KEYS_DIR || path.join(__dirname, '../../keys');
   private readonly keySize = 2048;
 
   private getPrivateKeyPath(userId: string) {
