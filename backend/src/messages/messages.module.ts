@@ -1,10 +1,12 @@
+// src/messages/messages.module.ts
 import { Module } from '@nestjs/common';
-import { MessagesController } from './messages.controller';
 import { MessagesService } from './messages.service';
-import { CryptoService } from './crypto/crypto.service';
+import { MessagesController } from './messages.controller';
+import { CryptoModule } from '../crypto/crypto.module';
 
 @Module({
+  imports: [CryptoModule],
   controllers: [MessagesController],
-  providers: [MessagesService, CryptoService],
+  providers: [MessagesService],
 })
 export class MessagesModule {}

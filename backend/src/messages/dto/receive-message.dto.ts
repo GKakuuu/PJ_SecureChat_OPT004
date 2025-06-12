@@ -1,20 +1,20 @@
-import { IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 
 export class ReceiveMessageDto {
-  @ApiProperty({ example: 'user1' })
+  @ApiProperty({ example: 'user-a', description: 'ID del remitente' })
   @IsString()
   from: string;
 
-  @ApiProperty({ example: 'ENCRYPTED_MESSAGE_BASE64' })
+  @ApiProperty({ example: 'Base64EncryptedMessage', description: 'Mensaje cifrado en base64' })
   @IsString()
   encryptedMessage: string;
 
-  @ApiProperty({ example: 'ENCRYPTED_AES_KEY_BASE64' })
+  @ApiProperty({ example: 'Base64EncryptedAESKey', description: 'Clave AES cifrada con RSA (base64)' })
   @IsString()
   encryptedAESKey: string;
 
-  @ApiProperty({ example: 'IV_BASE64' })
+  @ApiProperty({ example: 'IVBase64', description: 'IV del cifrado AES (base64)' })
   @IsString()
   iv: string;
 }

@@ -1,11 +1,12 @@
+// src/app.module.ts
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { MessagesModule } from './messages/messages.module';
+import { ChatModule } from './chat/chat.module';
+import { CryptoModule } from './crypto/crypto.module';
 
 @Module({
-  imports: [MessagesModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ChatModule,
+    CryptoModule, // Aunque ya está en ChatModule, puedes mantenerlo aquí también
+  ],
 })
 export class AppModule {}
