@@ -7,16 +7,20 @@ import { ReceiveMessageDto } from 'src/messages/dto/receive-message.dto';
 @ApiTags('chat')
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(private readonly chatService: ChatService) { }
 
   @Post('send')
   @ApiOperation({ summary: 'Enviar mensaje cifrado a otro usuario' })
   @ApiBody({ type: SendMessageDto })
   @ApiOkResponse({ description: 'Mensaje cifrado generado correctamente' })
   async sendMessage(@Body() dto: SendMessageDto) {
-    await this.chatService.sendMessage(dto);
-    return { status: 'ok', message: 'Mensaje enviado exitosamente' };
+    const encryptedPayload = await this.chatService.sendMessage(dto);
+    return {
+      status: 'ok',
+      ...encryptedPayload, // incluye from, to, encryptedMessage, encryptedAESKey, iv
+    };
   }
+
 
   @Post('receive')
   @ApiOperation({ summary: 'Recibir y descifrar un mensaje cifrado' })

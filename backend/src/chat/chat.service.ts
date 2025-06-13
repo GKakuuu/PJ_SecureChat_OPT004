@@ -17,10 +17,6 @@ export class ChatService {
   ) { }
 
   async sendMessage(dto: SendMessageDto) {
-    if (!this.peerUrl) {
-      throw new Error('PEER_URL no está definido en las variables de entorno');
-    }
-
     const aesKey = this.aesService.generateKey();
     const { iv, encryptedData } = this.aesService.encrypt(dto.message, aesKey);
 
@@ -37,8 +33,15 @@ export class ChatService {
         iv,
       }),
     );
-  }
 
+    return {
+      from: process.env.USER_ID,
+      to: dto.to,
+      encryptedMessage: encryptedData,
+      encryptedAESKey,
+      iv,
+    };
+  }
 
   receiveMessage(
     encryptedMessage: string,
