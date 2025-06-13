@@ -1,12 +1,13 @@
 // src/crypto/rsa.service.ts
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { constants } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 
 @Injectable()
 export class RSAService implements OnModuleInit {
-  private readonly keyDir = process.env.KEYS_DIR || path.join(__dirname, '../../keys');
+  private readonly keyDir = process.env.KEYS_DIR || path.join(__dirname, '../../../keys');
   private readonly keySize = 2048;
 
   private getPrivateKeyPath(userId: string) {
@@ -47,12 +48,29 @@ export class RSAService implements OnModuleInit {
     return fs.readFileSync(this.getPrivateKeyPath(userId), 'utf8');
   }
 
+  // Cifrar clave AES con la clave pública del receptor
   encryptAESKeyWithPublicKey(aesKey: Buffer, publicKey: string): string {
-    const encrypted = crypto.publicEncrypt(publicKey, aesKey);
+    const encrypted = crypto.publicEncrypt(
+      {
+        key: publicKey,
+        padding: constants.RSA_PKCS1_OAEP_PADDING,
+        oaepHash: 'sha256',
+      },
+      aesKey,
+    );
     return encrypted.toString('base64');
   }
 
-  decryptAESKeyWithPrivateKey(encryptedAESKey: string, privateKey: string): Buffer {
-    return crypto.privateDecrypt(privateKey, Buffer.from(encryptedAESKey, 'base64'));
+  // Descifrar clave AES con tu clave privada
+  decryptAESKeyWithPrivateKey(encryptedKey: string, privateKey: string): Buffer {
+    return crypto.privateDecrypt(
+      {
+        key: privateKey,
+        padding: constants.RSA_PKCS1_OAEP_PADDING,
+        oaepHash: 'sha256',
+      },
+      Buffer.from(encryptedKey, 'base64'),
+    );
   }
+
 }

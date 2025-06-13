@@ -13,11 +13,9 @@ export class ChatController {
   @ApiOperation({ summary: 'Enviar mensaje cifrado a otro usuario' })
   @ApiBody({ type: SendMessageDto })
   @ApiOkResponse({ description: 'Mensaje cifrado generado correctamente' })
-  sendMessage(@Body() body: SendMessageDto) {
-    const { message, to } = body;
-
-    const result = this.chatService.sendMessage(message, to);
-    return result;
+  async sendMessage(@Body() dto: SendMessageDto) {
+    await this.chatService.sendMessage(dto);
+    return { status: 'ok', message: 'Mensaje enviado exitosamente' };
   }
 
   @Post('receive')
@@ -28,11 +26,12 @@ export class ChatController {
     const { from, encryptedMessage, encryptedAESKey, iv } = body;
 
     const decryptedMessage = this.chatService.receiveMessage(
-      from,
       encryptedMessage,
       encryptedAESKey,
       iv,
+      process.env.USER_ID!, // ID del receptor actual
     );
+
     return { decryptedMessage };
   }
 }

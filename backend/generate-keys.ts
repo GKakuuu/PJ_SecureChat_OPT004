@@ -2,6 +2,9 @@
 import { generateKeyPairSync } from 'crypto';
 import { mkdirSync, writeFileSync, existsSync } from 'fs';
 import * as path from 'path';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const KEYS_DIR = path.join(__dirname, 'keys');
 
@@ -30,9 +33,13 @@ function main() {
     mkdirSync(KEYS_DIR);
   }
 
-  // Agrega aquí todos los usuarios necesarios
-  generateKeys('user1');
-  generateKeys('user2');
+  const userId = process.env.USER_ID;
+  if (!userId) {
+    console.error('❌ La variable de entorno USER_ID no está definida.');
+    process.exit(1);
+  }
+
+  generateKeys(userId);
 }
 
 main();

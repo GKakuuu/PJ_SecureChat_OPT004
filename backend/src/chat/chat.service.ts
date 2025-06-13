@@ -1,53 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import { AESService } from '../crypto/aes.service';
 import { RSAService } from '../crypto/rsa.service';
+import { SendMessageDto } from '../messages/dto/send-message.dto';
 
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
+  private readonly peerUrl = process.env.PEER_URL!; // 👈 se carga aquí
+
   constructor(
     private readonly aesService: AESService,
     private readonly rsaService: RSAService,
-  ) {}
+    private readonly httpService: HttpService,
+  ) { }
 
-  sendMessage(message: string, toUserId: string): {
-    encryptedMessage: string;
-    iv: string;
-    encryptedAESKey: string;
-  } {
-    // Generar clave AES
+  async sendMessage(dto: SendMessageDto) {
     const aesKey = this.aesService.generateKey();
+    const { iv, encryptedData } = this.aesService.encrypt(dto.message, aesKey);
 
-    // Cifrar mensaje con AES
-    const { iv, encryptedData } = this.aesService.encrypt(message, aesKey);
+    const peerPublicKey = this.rsaService.getPublicKey(dto.to);
+    const encryptedAESKey = this.rsaService.encryptAESKeyWithPublicKey(aesKey, peerPublicKey);
 
-    // Obtener clave pública RSA del destinatario
-    const publicKey = this.rsaService.getPublicKey(toUserId);
+    this.logger.log(`Enviando mensaje cifrado a ${dto.to}...`);
 
-    // Cifrar clave AES con RSA
-    const encryptedAESKey = this.rsaService.encryptAESKeyWithPublicKey(aesKey, publicKey);
-
-    return {
-      encryptedMessage: encryptedData,
-      iv,
-      encryptedAESKey,
-    };
+    await firstValueFrom(
+      this.httpService.post(`${this.peerUrl}`, {
+        from: process.env.USER_ID,
+        encryptedMessage: encryptedData,
+        encryptedAESKey,
+        iv,
+      }),
+    );
   }
 
+
   receiveMessage(
-    fromUserId: string,
     encryptedMessage: string,
     encryptedAESKey: string,
     iv: string,
+    myUserId: string,
   ): string {
-    // Obtener clave privada RSA del receptor (asumimos fromUserId es el receptor aquí)
-    const privateKey = this.rsaService.getPrivateKey(fromUserId);
-
-    // Descifrar clave AES con clave privada RSA
-    const aesKey = this.rsaService.decryptAESKeyWithPrivateKey(encryptedAESKey, privateKey);
-
-    // Descifrar mensaje con AES
+    const myPrivateKey = this.rsaService.getPrivateKey(myUserId);
+    const aesKey = this.rsaService.decryptAESKeyWithPrivateKey(encryptedAESKey, myPrivateKey);
     const decryptedMessage = this.aesService.decrypt(encryptedMessage, aesKey, iv);
-
     return decryptedMessage;
   }
 }

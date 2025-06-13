@@ -4,6 +4,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var crypto_1 = require("crypto");
 var fs_1 = require("fs");
 var path = require("path");
+var dotenv = require("dotenv");
+dotenv.config();
 var KEYS_DIR = path.join(__dirname, 'keys');
 function generateKeys(userId) {
     var publicKeyPath = path.join(KEYS_DIR, "".concat(userId, ".public.pem"));
@@ -25,8 +27,11 @@ function main() {
     if (!(0, fs_1.existsSync)(KEYS_DIR)) {
         (0, fs_1.mkdirSync)(KEYS_DIR);
     }
-    // Agrega aquí todos los usuarios necesarios
-    generateKeys('user1');
-    generateKeys('user2');
+    var userId = process.env.USER_ID;
+    if (!userId) {
+        console.error('❌ La variable de entorno USER_ID no está definida.');
+        process.exit(1);
+    }
+    generateKeys(userId);
 }
 main();
