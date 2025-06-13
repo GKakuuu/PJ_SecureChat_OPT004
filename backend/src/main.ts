@@ -1,9 +1,11 @@
-// src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as dotenv from 'dotenv';
 
 async function bootstrap() {
+  dotenv.config(); // <-- Carga las variables del .env
+
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()

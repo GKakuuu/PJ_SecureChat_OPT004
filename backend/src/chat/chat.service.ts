@@ -8,7 +8,7 @@ import { SendMessageDto } from '../messages/dto/send-message.dto';
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
-  private readonly peerUrl = process.env.PEER_URL!; // 👈 se carga aquí
+  private readonly peerUrl = process.env.PEER_URL!;
 
   constructor(
     private readonly aesService: AESService,
@@ -17,6 +17,10 @@ export class ChatService {
   ) { }
 
   async sendMessage(dto: SendMessageDto) {
+    if (!this.peerUrl) {
+      throw new Error('PEER_URL no está definido en las variables de entorno');
+    }
+
     const aesKey = this.aesService.generateKey();
     const { iv, encryptedData } = this.aesService.encrypt(dto.message, aesKey);
 
